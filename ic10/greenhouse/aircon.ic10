@@ -1,0 +1,69 @@
+# TODO can combine open/close with invert
+define okTemp 291
+define upPres 40
+define loPres 25
+define tTemp 303.15
+
+# devices
+alias exGasSen d0
+alias inGasSen d1
+alias exVent d2
+alias inVent d3
+alias tDisp d4
+alias pDisp d5
+
+
+# registers
+alias exTemp r0
+alias inTemp r1
+alias tTemp r2
+alias inPres r3
+alias tmpVal r15
+
+main:
+    # pull in the temps for each sensor
+    l exTemp exGasSen Temperature
+    l inTemp inGasSen Temperature
+    l inPres inGasSen Pressure
+
+    # update the display
+    jal upDisp
+    # if exTemp > 18C, ok to fix int air
+    bgtal exTemp okTemp okFixAir
+    # if exTemp < 18C, stop
+    bltal exTemp okTemp stopExVent
+    # if inPres > upPres, open vent
+    bgtal inPres upPres openDrain
+    # if inPres < loPres close vent
+    bltal inPres loPres closeDrain
+    j main
+
+stopExVent:
+    s exVent On 0
+    j ra
+
+okFixAir:
+    # if inTemp > tTemp, cool air
+    bgt inTemp tTemp startExVent
+    blt inTemp tTemp stopExVent
+    j ra
+
+startExVent:
+    s exVent On 1
+    j ra
+
+openDrain:
+    s inVent On 1
+    j ra
+
+closeDrain:
+    s inVent On 0
+    j ra
+
+upDisp:
+    sub tmpVal inTemp 273.15
+    s tDisp Setting tmpVal
+    s tDisp Color 3
+    s pDisp Setting inPres
+    s pDisp Color 1
+    j ra

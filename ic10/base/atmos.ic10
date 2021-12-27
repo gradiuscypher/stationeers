@@ -1,0 +1,26 @@
+# summary: check the pipe analyser ratios for
+# CO2, N2, and O, and turn on the vol pump
+# low % if the pres is below 102(?)kpa
+# 45% O2, 50% N2, 2% CO2, 3% whatever
+
+define tPres 102
+
+# devices
+alias cVolPump d0
+alias nVolPump d1
+alias oVolPump d2
+alias pipeA d3
+
+# registers
+alias inPres r0
+alias cPer r1
+alias nPer r2
+alias oPer r3
+
+
+main:
+    # read values
+    l inPres pipeA Pressure
+    l cPer cVolPump RatioCarbonDioxide
+    l nPer nVolPump RatioNitrogen
+    l oPer oVolPump RatioOxygen
